@@ -24,16 +24,16 @@ param
 (
    [Parameter(Mandatory = $false,
       Position = 1,
-      HelpMessage = 'Supply a count for user creation default 2500')]
-   [Int32]$UserCount = 2500,
+      HelpMessage = 'Supply a count for user creation default 100')]
+   [Int32]$UserCount = 100,
    [Parameter(Mandatory = $false,
       Position = 2,
-      HelpMessage = 'Supply a count for user creation default 500')]
-   [int32]$GroupCount = 500,
+      HelpMessage = 'Supply a count for user creation default 50')]
+   [int32]$GroupCount = 50,
    [Parameter(Mandatory = $false,
       Position = 3,
       HelpMessage = 'Supply the script directory for where this script is stored')]
-   [int32]$ComputerCount = 100,
+   [int32]$ComputerCount = 25,
    [Parameter(Mandatory = $false,
       Position = 4,
       HelpMessage = 'Skip the OU creation if you already have done it')]
@@ -45,7 +45,7 @@ param
    [Parameter(Mandatory = $false,
       Position = 6,
       HelpMessage = 'Make non-interactive for automation')]
-   [switch]$NonInteractive
+   [switch]$NonInteractive = $true
 )
 function Get-ScriptDirectory {
    Split-Path -Parent $PSCommandPath
@@ -56,37 +56,18 @@ $totalscripts = 8
 $i = 0
 Clear-host
 write-host "Welcome to BadBlood"
-if($NonInteractive -eq $false){
-    Write-Host  'Press any key to continue...';
-    write-host "`n"
-    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
-}
+write-host "Running in non-interactive mode"
 write-host "The first tool that absolutely mucks up your TEST domain"
 write-host "This tool is never meant for production and can totally screw up your domain"
-
-if($NonInteractive -eq $false){
-    Write-Host  'Press any key to continue...';
-    write-host "`n"
-    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
-}
-Write-Host  'Press any key to continue...';
 write-host "You are responsible for how you use this tool. It is intended for personal use only"
 write-host "This is not intended for commercial use"
-if($NonInteractive -eq $false){
-    Write-Host  'Press any key to continue...';
-    write-host "`n"
-    $null = $Host.UI.RawUI.ReadKey('NoEcho,IncludeKeyDown');
-}
 write-host "`n"
 write-host "Domain size generated via parameters `n Users: $UserCount `n Groups: $GroupCount `n Computers: $ComputerCount"
 write-host "`n"
-$badblood = "badblood"
-if($NonInteractive -eq $false){
 
-    $badblood = Read-Host -Prompt "Type `'badblood`' to deploy some randomness into a domain"
-    $badblood.tolower()
-    if ($badblood -ne 'badblood') { exit }
-}
+# Run badblood automatically since NonInteractive is set to true by default
+$badblood = "badblood"
+
 if ($badblood -eq 'badblood') {
 
    $Domain = Get-addomain
@@ -123,6 +104,7 @@ if ($badblood -eq 'badblood') {
    
    .($basescriptPath + '\AD_Users_Create\CreateUsers.ps1')
    $createuserscriptpath = $basescriptPath + '\AD_Users_Create\'
+   $x = 1
    do {
       createuser -Domain $Domain -OUList $ousAll -ScriptDir $createuserscriptpath
       Write-Progress -Activity "Random Stuff into A domain - Creating $UserCount Users" -Status "Progress:" -PercentComplete ($x / $UserCount * 100)
@@ -214,7 +196,7 @@ if ($badblood -eq 'badblood') {
    WeakUserPasswords -UserList $WeakUsers
     #>
 
-
+   write-host "BadBlood completed successfully!" -ForegroundColor Green
 }
 # $Definition = Get-Content Function:\CreateUser -ErrorAction Stop
    <#
@@ -222,7 +204,7 @@ if ($badblood -eq 'badblood') {
    #Add custom function to runspace pool https://devblogs.microsoft.com/scripting/powertip-add-custom-function-to-runspace-pool/
    $Definition = Get-Content ($basescriptPath + '\AD_Users_Create\CreateUsers.ps1') -ErrorAction Stop
    #Create a sessionstate function entry
-   $SessionStateFunction = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList ‘CreateUser’, $Definition
+   $SessionStateFunction = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList 'CreateUser', $Definition
    #Create a SessionStateFunction
    $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
    $initialSessionState.ImportPSModule("ActiveDirectory")
@@ -277,7 +259,7 @@ if ($badblood -eq 'badblood') {
    # $Definition = Get-Content ($basescriptPath + '\AD_Groups_Create\CreateGroup.ps1') -ErrorAction Stop
 
    #Create a sessionstate function entry
-   $SessionStateFunction = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList ‘CreateGroup’, $Definition
+   $SessionStateFunction = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList 'CreateGroup', $Definition
    #Create a SessionStateFunction
    $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
    $initialSessionState.ImportPSModule("ActiveDirectory")
@@ -323,7 +305,7 @@ if ($badblood -eq 'badblood') {
     #Create a sessionstate function entry
     
     $Definition = Get-Content ($basescriptPath + '\AD_Computers_Create\CreateComputers.ps1') -ErrorAction Stop
-    $SessionStateFunction = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList ‘CreateComputer’, $Definition
+    $SessionStateFunction = New-Object System.Management.Automation.Runspaces.SessionStateFunctionEntry -ArgumentList 'CreateComputer', $Definition
     #Create a SessionStateFunction
     $InitialSessionState = [System.Management.Automation.Runspaces.InitialSessionState]::CreateDefault()
     $initialSessionState.ImportPSModule("ActiveDirectory")
